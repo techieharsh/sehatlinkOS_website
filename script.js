@@ -76,7 +76,7 @@ window.addEventListener(
 
 // ScrollSpy Nav Link Active State
 const sections = document.querySelectorAll("section[id]");
-const navLinks = document.querySelectorAll('.nav-links a[href^="#"]');
+const navLinks = document.querySelectorAll('.nav-links a[href^="#"]:not(.nav-cta)');
 
 window.addEventListener(
   "scroll",
@@ -130,23 +130,23 @@ if (heroVisual && dashboard) {
 
 // Subtle 3D Tilt Micro-interaction on Role Portal Card Hover
 const accessVisual = document.querySelector(".access-visual");
-const rolePortalCard = document.querySelector(".role-portal-card");
+const portalWindow = document.querySelector(".portal-frame-window") || document.querySelector(".role-portal-card");
 
-if (accessVisual && rolePortalCard) {
+if (accessVisual && portalWindow) {
   accessVisual.addEventListener("mousemove", (e) => {
     const rect = accessVisual.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
-    const rotateX = ((y - centerY) / centerY) * -5;
-    const rotateY = ((x - centerX) / centerX) * 5;
+    const rotateX = ((y - centerY) / centerY) * -4;
+    const rotateY = ((x - centerX) / centerX) * 4;
 
-    rolePortalCard.style.transform = `perspective(1200px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`;
+    portalWindow.style.transform = `perspective(1200px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.01)`;
   });
 
   accessVisual.addEventListener("mouseleave", () => {
-    rolePortalCard.style.transform = "";
+    portalWindow.style.transform = "";
   });
 }
 
@@ -169,7 +169,7 @@ demoForm.addEventListener("submit", (event) => {
 const presentationData = [
   {
     stepTag: "STAGE 01 · PATIENT REGISTRATION",
-    badge: "Step 1 of 5 · Reception Desk",
+    badge: "Step 1 of 4 · Reception Desk",
     title: "1. Patient Arrival & Reception Registration with ABHA",
     description:
       "When a patient arrives at the hospital, the receptionist opens <strong>SehatLink OS</strong>. Entering the patient's Aadhaar or mobile number triggers an OTP. Upon verification, a 14-digit <strong>ABHA Health ID</strong> and unique hospital UHID are generated instantly in seconds.",
@@ -193,7 +193,7 @@ const presentationData = [
   },
   {
     stepTag: "STAGE 02 · OPD CONSULTATION",
-    badge: "Step 2 of 5 · OPD Doctor EMR",
+    badge: "Step 2 of 4 · OPD Doctor EMR",
     title: "2. OPD Doctor Consultation & EMR Prescription Linkage",
     description:
       "The doctor opens the patient profile in <strong>SehatLink OS EMR</strong>. Symptoms, vitals, diagnosis, and digital prescriptions are entered effortlessly. As soon as the doctor clicks save, the prescription is formatted into standard FHIR bundles and linked to the patient's ABHA ID.",
@@ -217,7 +217,7 @@ const presentationData = [
   },
   {
     stepTag: "STAGE 03 · IPD WARD ADMISSION",
-    badge: "Step 3 of 5 · IPD Ward Care",
+    badge: "Step 3 of 4 · IPD Ward Care",
     title: "3. IPD Ward Admission, Nursing & Discharge Record Sync",
     description:
       "If patient requires admission, ward nurses and doctors log daily vitals, nursing care notes, lab orders, and discharge summaries directly into SehatLink OS IPD module. All inpatient progress notes are digitally stored and linked to ABDM.",
@@ -241,7 +241,7 @@ const presentationData = [
   },
   {
     stepTag: "STAGE 04 · PM-JAY & BILLING",
-    badge: "Step 4 of 5 · Cashless Billing Counter",
+    badge: "Step 4 of 4 · Cashless Billing Counter",
     title: "4. Ayushman PM-JAY Settlement & Transparent Billing",
     description:
       "At the billing counter, SehatLink OS processes transparent itemized invoices. For Ayushman Bharat PM-JAY beneficiaries, pre-authorization claims and package settlements are managed with zero hassle through integrated HFR & PM-JAY workflows.",
@@ -262,30 +262,6 @@ const presentationData = [
     ],
     quote:
       '💬 <em>"Single-click billing clearance & Ayushman claim authorization inside SehatLink OS!"</em>',
-  },
-  {
-    stepTag: "STAGE 05 · PATIENT MOBILE CONSENT",
-    badge: "Step 5 of 5 · ABHA Mobile PHR App",
-    title: "5. Patient Mobile Consent & Lifetime Health Record Sync",
-    description:
-      "After discharge, the patient returns home with complete digital empowerment. They can view their OPD prescriptions, diagnostic reports, and IPD summaries on any ABHA PHR Mobile App (e.g. ABHA App, Paytm, Aarogya Setu) and grant secure consent to share records with doctors anywhere in India.",
-    image: "assets/images/abdm_patient_records_flow.jpg",
-    points: [
-      {
-        icon: "📱",
-        text: "<strong>ABHA PHR App:</strong> Instant mobile access to prescriptions & diagnostic reports.",
-      },
-      {
-        icon: "🔑",
-        text: "<strong>Consent Manager:</strong> Patient controls who sees their health data with OTP consent.",
-      },
-      {
-        icon: "🌐",
-        text: "<strong>Lifetime Portability:</strong> No paper files needed — digital medical history anywhere.",
-      },
-    ],
-    quote:
-      '💬 <em>"Patient scans QR code or approves consent on mobile → Complete hospital records accessible anytime!"</em>',
   },
 ];
 
@@ -428,3 +404,95 @@ if (roleCards.length > 0 && portalTabs.length > 0) {
     });
   });
 }
+
+// Pricing Page Billing Frequency Toggle (Monthly vs Annual)
+const billingSwitch = document.getElementById("billingSwitch");
+const labelMonthly = document.getElementById("labelMonthly");
+const labelAnnual = document.getElementById("labelAnnual");
+const starterPrice = document.getElementById("starterPrice");
+const starterNote = document.getElementById("starterNote");
+const hospitalPrice = document.getElementById("hospitalPrice");
+const hospitalNote = document.getElementById("hospitalNote");
+
+if (billingSwitch) {
+  let isAnnual = true;
+
+  function updatePricingDisplay() {
+    if (isAnnual) {
+      billingSwitch.classList.add("annual");
+      billingSwitch.setAttribute("aria-checked", "true");
+      if (labelMonthly) labelMonthly.classList.remove("active");
+      if (labelAnnual) labelAnnual.classList.add("active");
+      if (starterPrice) starterPrice.textContent = "1,599";
+      if (starterNote) starterNote.textContent = "Billed ₹19,188 annually · Save 20%";
+      if (hospitalPrice) hospitalPrice.textContent = "4,799";
+      if (hospitalNote) hospitalNote.textContent = "Billed ₹57,588 annually · Save 20%";
+    } else {
+      billingSwitch.classList.remove("annual");
+      billingSwitch.setAttribute("aria-checked", "false");
+      if (labelMonthly) labelMonthly.classList.add("active");
+      if (labelAnnual) labelAnnual.classList.remove("active");
+      if (starterPrice) starterPrice.textContent = "1,999";
+      if (starterNote) starterNote.textContent = "Billed monthly · Cancel anytime";
+      if (hospitalPrice) hospitalPrice.textContent = "5,999";
+      if (hospitalNote) hospitalNote.textContent = "Billed monthly · Cancel anytime";
+    }
+  }
+
+  billingSwitch.addEventListener("click", () => {
+    isAnnual = !isAnnual;
+    updatePricingDisplay();
+  });
+
+  if (labelMonthly) {
+    labelMonthly.addEventListener("click", () => {
+      isAnnual = false;
+      updatePricingDisplay();
+    });
+  }
+
+  if (labelAnnual) {
+    labelAnnual.addEventListener("click", () => {
+      isAnnual = true;
+      updatePricingDisplay();
+    });
+  }
+}
+
+// Care Management & Billing — Capability Comparison Table Filtering
+const capabilityFilterBtns = document.querySelectorAll(".filter-pill-btn[data-filter]");
+const capabilityRows = document.querySelectorAll(".capability-row[data-tags]");
+const moduleCountBadge = document.getElementById("moduleCountBadge");
+
+if (capabilityFilterBtns.length > 0 && capabilityRows.length > 0) {
+  capabilityFilterBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      capabilityFilterBtns.forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+
+      const filterValue = btn.getAttribute("data-filter");
+      let visibleCount = 0;
+
+      capabilityRows.forEach((row) => {
+        const rowTags = row.getAttribute("data-tags") || "";
+        const tagsList = rowTags.split(" ");
+
+        if (filterValue === "all" || tagsList.includes(filterValue)) {
+          row.style.display = "";
+          visibleCount++;
+        } else {
+          row.style.display = "none";
+        }
+      });
+
+      if (moduleCountBadge) {
+        if (filterValue === "all") {
+          moduleCountBadge.textContent = "Showing all 14 modules";
+        } else {
+          moduleCountBadge.textContent = `Showing ${visibleCount} modules`;
+        }
+      }
+    });
+  });
+}
+
