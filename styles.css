@@ -51,6 +51,11 @@ a {
   width: min(1360px, calc(100% - 56px));
   margin: auto;
 }
+#site-header-container,
+#site-header-placeholder {
+  min-height: 92px;
+  display: block;
+}
 .site-header {
   height: 92px;
   background: rgba(255, 255, 255, 0.96);

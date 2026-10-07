@@ -1,31 +1,178 @@
-const menuButton = document.querySelector(".menu-toggle");
-const nav = document.querySelector(".nav-links");
-const header = document.querySelector(".site-header");
+// ==========================================
+// Modular Header and Footer System
+// Loads header.html and footer.html dynamically
+// Supports both web servers (fetch) and file:/// protocol (fallback)
+// ==========================================
 
-// Mobile Menu Toggle
-menuButton.addEventListener("click", () => {
-  const isOpen = nav.classList.toggle("open");
-  menuButton.setAttribute("aria-expanded", String(isOpen));
-});
+const HEADER_TEMPLATE = `<header class="site-header">
+  <div class="container nav-wrap">
+    <a class="brand" href="index.html" aria-label="DigiTech Innovations — A Unit of Tishha Consultants LLP home">
+      <div class="company-logo-badge">
+        <img src="assets/images/digitechinnovation_White_logo.jpg" alt="DigiTech Innovations Logo"
+          class="company-logo-img" />
+      </div>
+      <span class="brand-copy">
+        <strong>DigiTech Innovations</strong>
+        <small>A Unit of Tishha Consultants LLP</small>
+      </span>
+    </a>
+    <button class="menu-toggle" aria-label="Toggle navigation" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <nav class="nav-links">
+      <a href="index.html" data-nav="home">Home</a>
+      <div class="nav-item-dropdown">
+        <a href="product.html" class="nav-dropdown-trigger" data-nav="product">
+          Product <span class="dropdown-chevron">▾</span>
+        </a>
+        <div class="dropdown-menu">
+          <div class="dropdown-menu-inner">
+            <a href="product.html" class="dropdown-item">
+              <span class="dropdown-icon blue">✣</span>
+              <div>
+                <strong>SehatLink OS Overview</strong>
+                <small>Complete Hospital Management System</small>
+              </div>
+            </a>
+            <a href="product.html#abdm-workflow" class="dropdown-item">
+              <span class="dropdown-icon teal">↗</span>
+              <div>
+                <strong>How SehatLink OS Works with ABDM</strong>
+                <small>M1, M2 & M3 Milestone Workflows</small>
+              </div>
+            </a>
+            <a href="product.html#features" class="dropdown-item">
+              <span class="dropdown-icon cyan">▦</span>
+              <div>
+                <strong>Modules & Features</strong>
+                <small>OPD, IPD, Billing & EMR</small>
+              </div>
+            </a>
+            <a href="index.html#about" class="dropdown-item">
+              <span class="dropdown-icon violet">⚙</span>
+              <div>
+                <strong>Role-Based Access</strong>
+                <small>Reception, Doctor & Admin Portals</small>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+      <a href="pricing.html" data-nav="pricing">Pricing</a>
+      <a href="why-choose-us.html" data-nav="why-choose-us">Why Choose Us</a>
+      <a class="nav-cta" href="index.html#contact"><span class="calendar-icon">▦</span> Book a Free Demo</a>
+    </nav>
+  </div>
+</header>`;
 
-nav.querySelectorAll("a:not(.nav-dropdown-trigger)").forEach((link) => {
-  link.addEventListener("click", () => {
-    nav.classList.remove("open");
-    menuButton.setAttribute("aria-expanded", "false");
+const FOOTER_TEMPLATE = `<footer class="site-footer">
+  <div class="container footer-top">
+    <a class="brand footer-brand" href="index.html"
+      aria-label="DigiTech Innovations — A Unit of Tishha Consultants LLP home">
+      <div class="company-logo-badge footer-logo-badge">
+        <img src="assets/images/digitechinnovation_darkbg_logo.png" alt="DigiTech Innovations Logo"
+          class="company-logo-img" />
+      </div>
+      <span class="brand-copy">
+        <strong>DigiTech Innovations</strong>
+        <small>A Unit of Tishha Consultants LLP</small>
+      </span>
+    </a>
+    <div class="footer-links">
+      <a href="index.html">Home</a>
+      <a href="product.html">Product (SehatLink OS)</a>
+      <a href="product.html#features">Modules & Features</a>
+      <a href="pricing.html">Pricing Plans</a>
+      <a href="why-choose-us.html">Why Choose Us</a>
+      <a href="product.html#abdm-workflow">ABDM Workflow</a>
+      <a href="index.html#contact">Contact</a>
+    </div>
+  </div>
+  <div class="container footer-bottom">
+    <span>© <span id="year"></span> DigiTech Innovations — A Unit of Tishha Consultants LLP. All rights reserved.</span>
+    <span>SehatLink OS · Hospital Information Management System · Compliant with ABDM & Ayushman Bharat PM-JAY</span>
+  </div>
+</footer>`;
+
+function setActiveNavLink() {
+  const currentPath = window.location.pathname.toLowerCase();
+  let activeKey = "home";
+
+  if (currentPath.includes("pricing")) {
+    activeKey = "pricing";
+  } else if (currentPath.includes("product")) {
+    activeKey = "product";
+  } else if (currentPath.includes("why-choose-us")) {
+    activeKey = "why-choose-us";
+  } else {
+    activeKey = "home";
+  }
+
+  // Remove active from all nav links
+  document.querySelectorAll(".nav-links a").forEach((link) => {
+    link.classList.remove("active");
   });
-});
 
-// Dropdown Menu Click Toggle for Mobile & Touch
-const dropdownTriggers = document.querySelectorAll(".nav-dropdown-trigger");
-dropdownTriggers.forEach((trigger) => {
-  trigger.addEventListener("click", (e) => {
-    const parent = trigger.closest(".nav-item-dropdown");
-    if (window.innerWidth <= 1040) {
-      e.preventDefault();
-      parent.classList.toggle("open");
-    }
+  // Activate matching nav link
+  const activeLink = document.querySelector(`.nav-links a[data-nav="${activeKey}"]`);
+  if (activeLink) {
+    activeLink.classList.add("active");
+  }
+
+  // If on index.html/home, refine anchor links for smooth scrolling
+  if (activeKey === "home") {
+    const cta = document.querySelector(".nav-links .nav-cta");
+    if (cta) cta.setAttribute("href", "#contact");
+
+    const homeLink = document.querySelector('.nav-links a[data-nav="home"]');
+    if (homeLink) homeLink.setAttribute("href", "#home");
+
+    const brand = document.querySelector(".site-header a.brand");
+    if (brand) brand.setAttribute("href", "#home");
+  }
+}
+
+function bindHeaderEvents() {
+  const menuButton = document.querySelector(".menu-toggle");
+  const nav = document.querySelector(".nav-links");
+
+  if (menuButton && nav) {
+    menuButton.addEventListener("click", () => {
+      const isOpen = nav.classList.toggle("open");
+      menuButton.setAttribute("aria-expanded", String(isOpen));
+    });
+
+    nav.querySelectorAll("a:not(.nav-dropdown-trigger)").forEach((link) => {
+      link.addEventListener("click", () => {
+        nav.classList.remove("open");
+        menuButton.setAttribute("aria-expanded", "false");
+      });
+    });
+  }
+
+  // Dropdown Menu Click Toggle for Mobile & Touch
+  const dropdownTriggers = document.querySelectorAll(".nav-dropdown-trigger");
+  dropdownTriggers.forEach((trigger) => {
+    trigger.addEventListener("click", (e) => {
+      const parent = trigger.closest(".nav-item-dropdown");
+      if (window.innerWidth <= 1040) {
+        e.preventDefault();
+        if (parent) {
+          parent.classList.toggle("open");
+        }
+      }
+    });
   });
-});
+
+  setActiveNavLink();
+}
+
+function bindFooterEvents() {
+  const yearEl = document.getElementById("year");
+  if (yearEl) {
+    yearEl.textContent = new Date().getFullYear();
+  }
+}
 
 // Close dropdown on clicking outside
 document.addEventListener("click", (e) => {
@@ -36,8 +183,116 @@ document.addEventListener("click", (e) => {
   }
 });
 
-// Set Dynamic Year
-document.getElementById("year").textContent = new Date().getFullYear();
+// Sticky Header Scrolled State
+window.addEventListener(
+  "scroll",
+  () => {
+    const siteHeader = document.querySelector(".site-header");
+    if (siteHeader) {
+      if (window.scrollY > 20) {
+        siteHeader.classList.add("scrolled");
+      } else {
+        siteHeader.classList.remove("scrolled");
+      }
+    }
+  },
+  { passive: true },
+);
+
+// ScrollSpy Nav Link Active State (for home page in-page sections)
+function initScrollSpy() {
+  const currentPath = window.location.pathname.toLowerCase();
+  const isHome =
+    currentPath.endsWith("index.html") ||
+    currentPath.endsWith("/") ||
+    currentPath === "" ||
+    (!currentPath.includes("pricing") &&
+      !currentPath.includes("product") &&
+      !currentPath.includes("why-choose-us"));
+
+  if (!isHome) return;
+
+  const sections = document.querySelectorAll("section[id]");
+  window.addEventListener(
+    "scroll",
+    () => {
+      let currentSectionId = "";
+      const scrollPosition = window.scrollY + 120;
+
+      sections.forEach((section) => {
+        const sectionTop = section.offsetTop;
+        const sectionHeight = section.offsetHeight;
+        if (
+          scrollPosition >= sectionTop &&
+          scrollPosition < sectionTop + sectionHeight
+        ) {
+          currentSectionId = section.getAttribute("id");
+        }
+      });
+
+      if (currentSectionId) {
+        const hashLinks = document.querySelectorAll(
+          '.nav-links a[href^="#"]:not(.nav-cta)'
+        );
+        hashLinks.forEach((link) => {
+          if (link.getAttribute("href") === `#${currentSectionId}`) {
+            link.classList.add("active");
+          } else {
+            link.classList.remove("active");
+          }
+        });
+      }
+    },
+    { passive: true },
+  );
+}
+
+async function loadHeaderAndFooter() {
+  const headerContainer =
+    document.getElementById("site-header-container") ||
+    document.getElementById("site-header-placeholder");
+  const footerContainer =
+    document.getElementById("site-footer-container") ||
+    document.getElementById("site-footer-placeholder");
+
+  if (window.location.protocol.startsWith("http")) {
+    try {
+      const [headerRes, footerRes] = await Promise.all([
+        fetch("header.html")
+          .then((r) => (r.ok ? r.text() : null))
+          .catch(() => null),
+        fetch("footer.html")
+          .then((r) => (r.ok ? r.text() : null))
+          .catch(() => null),
+      ]);
+
+      if (headerContainer) {
+        headerContainer.outerHTML = headerRes || HEADER_TEMPLATE;
+      }
+      if (footerContainer) {
+        footerContainer.outerHTML = footerRes || FOOTER_TEMPLATE;
+      }
+    } catch (e) {
+      if (headerContainer) headerContainer.outerHTML = HEADER_TEMPLATE;
+      if (footerContainer) footerContainer.outerHTML = FOOTER_TEMPLATE;
+    }
+  } else {
+    // Immediate fallback for file:/// protocol (prevents CORS blocking)
+    if (headerContainer) headerContainer.outerHTML = HEADER_TEMPLATE;
+    if (footerContainer) footerContainer.outerHTML = FOOTER_TEMPLATE;
+  }
+
+  bindHeaderEvents();
+  bindFooterEvents();
+  initScrollSpy();
+}
+
+// Initialize Modular Header & Footer immediately
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", loadHeaderAndFooter);
+} else {
+  loadHeaderAndFooter();
+}
 
 // Scroll-Reveal Observer System
 const observerOptions = {
@@ -60,51 +315,6 @@ document
   .forEach((el) => {
     revealObserver.observe(el);
   });
-
-// Sticky Header Scrolled State
-window.addEventListener(
-  "scroll",
-  () => {
-    if (window.scrollY > 20) {
-      header.classList.add("scrolled");
-    } else {
-      header.classList.remove("scrolled");
-    }
-  },
-  { passive: true },
-);
-
-// ScrollSpy Nav Link Active State
-const sections = document.querySelectorAll("section[id]");
-const navLinks = document.querySelectorAll('.nav-links a[href^="#"]:not(.nav-cta)');
-
-window.addEventListener(
-  "scroll",
-  () => {
-    let currentSectionId = "";
-    const scrollPosition = window.scrollY + 120;
-
-    sections.forEach((section) => {
-      const sectionTop = section.offsetTop;
-      const sectionHeight = section.offsetHeight;
-      if (
-        scrollPosition >= sectionTop &&
-        scrollPosition < sectionTop + sectionHeight
-      ) {
-        currentSectionId = section.getAttribute("id");
-      }
-    });
-
-    navLinks.forEach((link) => {
-      if (link.getAttribute("href") === `#${currentSectionId}`) {
-        link.classList.add("active");
-      } else {
-        link.classList.remove("active");
-      }
-    });
-  },
-  { passive: true },
-);
 
 // Subtle 3D Tilt Micro-interaction on Dashboard Hover
 const heroVisual = document.querySelector(".hero-visual");
